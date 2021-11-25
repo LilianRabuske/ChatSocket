@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat using socket</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.0/socket.io.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+    <div class = "text">
+        <h2>UNICHAT</h2>
+    </div>
+    <form id="chat">
+        <input type="text" name="username" placeholder="Digite seu nome">
+        <div class="messages"></div>
+        <input type="text" name="message" id="messagefield" placeholder="Digite uma mensagem">
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script type="text/javascript">
+        var socket = io('http://localhost:5000');
+
+        function renderMessage(message) {
+            $('.messages').append('<div class="message"><strong>' + message.author + '</strong>: ' + message.message + ' <div>');
+        }
+        function ClearFields() {
+            document.getElementById("messagefield").value = "";
+        }
+
+        socket.on('receivedMessage', function (message) {
+            renderMessage(message);
+        })
+
+        $('#chat').submit(function (event) {
+            event.preventDefault();
+            var author = $('input[name=username]').val();
+            var message = $('input[name=message]').val();
+
+            if (author.length && message.length) {
+                var messageObject = {
+                    author: author,
+                    message: message,
+                };
+
+                renderMessage(messageObject)
+                socket.emit('sendMessage', messageObject);
+            }else{
+                var messageObject = {
+                    author: "Servidor",
+                    message: "Erro ao tentar enviar mensagem! Atenção: sempre certifique-se que os campos do nome e da mensagem estão preenchidos.",
+                };
+
+                renderMessage(messageObject)
+                socket.emit('sendMessage', messageObject);
+            }
+
+            ClearFields();
+
+        });
+
+    </script>
+</body>
+
+</html>
